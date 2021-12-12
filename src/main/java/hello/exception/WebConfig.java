@@ -2,22 +2,28 @@ package hello.exception;
 
 import hello.exception.filter.LogFilter;
 import hello.exception.interceptor.LogInterceptor;
+import hello.exception.resolver.MyHandlerExceptionResolver;
+import hello.exception.resolver.UserHandlerExceptionResolver;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
+import java.util.List;
 
 @Configuration
 @RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
     private final LogFilter logFilter;
     private final LogInterceptor logInterceptor;
+    private final MyHandlerExceptionResolver myHandlerExceptionResolver;
+    private final UserHandlerExceptionResolver userHandlerExceptionResolver;
 
     /**
      * 앞서 필터의 경우에는 필터를 등록할 때 어떤 DispatcherType 인 경우에 필터를 적용할 지 선택할 수 있었다.
@@ -34,7 +40,13 @@ public class WebConfig implements WebMvcConfigurer {
                 .excludePathPatterns("/css/**", "*.ico", "/error", "/error-page/**"); // 오류 페이지 경로
     }
 
-    // 이 필터는 DispatcherType이 REQUEST, ERROR일 때 호출된다.
+    @Override
+    public void extendHandlerExceptionResolvers(List<HandlerExceptionResolver> resolvers) {
+        resolvers.add(myHandlerExceptionResolver);
+        resolvers.add(userHandlerExceptionResolver);
+    }
+
+    // 이 필터는 DispatcherType이 REQUEST, ERROR일 때 호출된다. (기본 REQUEST)
     //    @Bean
     public FilterRegistrationBean logFilterBean() {
         FilterRegistrationBean<Filter> filterRegistrationBean = new FilterRegistrationBean<Filter>();
